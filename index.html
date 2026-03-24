@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fungsi dan Prinsip Kerja Protokol Jaringan: HTTPS, TCP, Ethernet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 12pt;
+    color: #1a1a1a;
+    background: #fff;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 40px 60px;
+    line-height: 1.7;
+  }
+  h1 { font-size: 20pt; font-weight: 700; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #555; font-size: 11pt; margin-bottom: 28px; }
+  h2 { font-size: 15pt; font-weight: 700; margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 2.5px solid #2563eb; color: #1d40ae; }
+  h3 { font-size: 12pt; font-weight: 700; margin: 18px 0 6px; color: #1a1a1a; }
+  p { margin-bottom: 10px; }
+  .badge {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    font-size: 9pt;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .badge.tcp { background: #16a34a; }
+  .badge.eth { background: #b45309; }
+
+  .info-box {
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    padding: 10px 16px;
+    margin: 10px 0 16px;
+    border-radius: 0 6px 6px 0;
+    font-size: 11.5pt;
+  }
+  .info-box.tcp { background: #f0fdf4; border-color: #16a34a; }
+  .info-box.eth { background: #fefce8; border-color: #b45309; }
+
+  /* ─── Diagram container ─── */
+  .diagram-wrap {
+    margin: 18px 0;
+    background: #f8fafc;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 16px 8px;
+    text-align: center;
+  }
+  .diagram-caption {
+    font-size: 10pt;
+    color: #555;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* ─── Hardware table ─── */
+  table.hw {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 11pt;
+  }
+  table.hw th {
+    background: #2563eb;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  table.hw.tcp th { background: #16a34a; }
+  table.hw.eth th { background: #b45309; }
+  table.hw td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  table.hw tr:nth-child(even) td { background: #f8fafc; }
+  table.hw td:first-child { font-weight: 600; width: 32%; }
+
+  /* ─── References ─── */
+  .refs { margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 16px; }
+  .refs h2 { border-color: #64748b; color: #334155; }
+  ol.reflist { padding-left: 20px; }
+  ol.reflist li { margin-bottom: 6px; font-size: 11pt; }
+  ol.reflist a { color: #2563eb; word-break: break-all; }
+
+  @media print {
+    body { padding: 16px 20px; }
+    .diagram-wrap { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Fungsi dan Prinsip Kerja Protokol Komunikasi Jaringan</h1>
+<p class="subtitle">Topik: Model Protokol — HTTPS · TCP · Ethernet</p>
+
+<!-- ═══════════════════════════════════════════
+     1. HTTPS
+════════════════════════════════════════════ -->
+<h2><span class="badge">1</span> HTTPS — HyperText Transfer Protocol Secure</h2>
+
+<h3>Fungsi Utama: Layanan Web (Aman)</h3>
+<div class="info-box">
+  HTTPS adalah protokol lapisan aplikasi (OSI Layer 7) yang berfungsi sebagai fondasi komunikasi World Wide Web. HTTPS merupakan pengembangan dari HTTP dengan penambahan lapisan enkripsi TLS/SSL, sehingga seluruh data yang dikirim antara browser dan server tidak dapat dibaca oleh pihak ketiga di jaringan.<sup>[1,2]</sup>
+</div>
+
+<p>Fungsi utama HTTPS dalam akses website adalah <strong>mengirim HTTP Request dari browser</strong> ke web server dan <strong>menerima HTTP Response</strong> (berupa halaman HTML, gambar, skrip, dsb.) secara terenkripsi. Protokol ini bekerja secara default pada port <strong>443</strong>. Dibanding HTTP biasa (port 80), HTTPS memastikan tiga hal: <em>kerahasiaan</em> data (enkripsi), <em>integritas</em> data (tidak dimodifikasi di tengah jalan), dan <em>autentikasi</em> server (melalui sertifikat digital).<sup>[2,3]</sup></p>
+
+<h3>Peran dalam Akses Website</h3>
+<p>Saat pengguna mengetik URL dengan awalan <code>https://</code>, browser akan: (1) membuka koneksi TCP ke server, (2) melakukan <em>TLS Handshake</em> untuk menyepakati kunci enkripsi, (3) mengirim <strong>HTTP Request</strong> (GET, POST, dll.) secara terenkripsi, lalu (4) menerima <strong>HTTP Response</strong> berisi konten halaman. Browser modern menampilkan ikon gembok sebagai tanda koneksi aman.<sup>[3,4]</sup></p>
+
+<!-- ── Diagram HTTPS ── -->
+<h3>Diagram Blok Alur Protokol HTTPS</h3>
+<div class="diagram-wrap">
+<svg width="100%" viewBox="0 0 760 480" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Client box -->
+  <rect x="20" y="20" width="130" height="440" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="85" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="#1d40ae">CLIENT</text>
+  <text x="85" y="58" text-anchor="middle" font-size="9" fill="#2563eb">(Browser)</text>
+
+  <!-- Server box -->
+  <rect x="610" y="20" width="130" height="440" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="675" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">SERVER</text>
+  <text x="675" y="58" text-anchor="middle" font-size="9" fill="#16a34a">(Web Server)</text>
+
+  <!-- Phase labels -->
+  <rect x="160" y="30" width="440" height="22" rx="4" fill="#dbeafe"/>
+  <text x="380" y="45" text-anchor="middle" font-size="10" font-weight="600" fill="#1d40ae">① TCP 3-Way Handshake</text>
+
+  <!-- TCP handshake arrows -->
+  <line x1="150" y1="75" x2="610" y2="90" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="72" text-anchor="middle" font-size="9.5" fill="#1e40af">SYN</text>
+
+  <line x1="610" y1="105" x2="150" y2="120" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="115" text-anchor="middle" font-size="9.5" fill="#1e40af">SYN + ACK</text>
+
+  <line x1="150" y1="135" x2="610" y2="148" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="133" text-anchor="middle" font-size="9.5" fill="#1e40af">ACK</text>
+
+  <!-- Phase 2 -->
+  <rect x="160" y="158" width="440" height="22" rx="4" fill="#fef9c3"/>
+  <text x="380" y="173" text-anchor="middle" font-size="10" font-weight="600" fill="#713f12">② TLS Handshake (Negosiasi Enkripsi)</text>
+
+  <line x1="150" y1="196" x2="610" y2="210" stroke="#d97706" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="194" text-anchor="middle" font-size="9.5" fill="#92400e">Client Hello</text>
+
+  <line x1="610" y1="224" x2="150" y2="238" stroke="#d97706" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="222" text-anchor="middle" font-size="9.5" fill="#92400e">Server Hello + Certificate</text>
+
+  <line x1="150" y1="252" x2="610" y2="266" stroke="#d97706" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="250" text-anchor="middle" font-size="9.5" fill="#92400e">Client Key Exchange + Finished</text>
+
+  <line x1="610" y1="280" x2="150" y2="294" stroke="#d97706" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="380" y="278" text-anchor="middle" font-size="9.5" fill="#92400e">Server Finished</text>
+
+  <!-- Phase 3 -->
+  <rect x="160" y="304" width="440" height="22" rx="4" fill="#dcfce7"/>
+  <text x="380" y="319" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">③ Transfer Data Terenkripsi</text>
+
+  <line x1="150" y1="342" x2="610" y2="356" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="380" y="340" text-anchor="middle" font-size="9.5" fill="#166534">HTTP Request (GET /index.html) [Encrypted]</text>
+
+  <line x1="610" y1="372" x2="150" y2="386" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="380" y="370" text-anchor="middle" font-size="9.5" fill="#166534">HTTP Response 200 OK + Data [Encrypted]</text>
+
+  <!-- Phase 4 -->
+  <rect x="160" y="398" width="440" height="22" rx="4" fill="#fee2e2"/>
+  <text x="380" y="413" text-anchor="middle" font-size="10" font-weight="600" fill="#991b1b">④ Penutupan Koneksi (FIN/ACK)</text>
+
+  <line x1="150" y1="436" x2="610" y2="450" stroke="#dc2626" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <text x="380" y="434" text-anchor="middle" font-size="9.5" fill="#991b1b">FIN / ACK</text>
+</svg>
+<p class="diagram-caption">Gambar 1. Diagram alur lengkap protokol HTTPS: TCP Handshake → TLS Handshake → Transfer Data Terenkripsi → Penutupan Koneksi.</p>
+</div>
+
+<p><em>Sumber diagram alur: diadaptasi dari [3,4,5]. Untuk diagram dengan TLS handshake terperinci dari penelitian ilmiah, lihat: ResearchGate – "HTTPS message sequence diagram with detailed TLS handshaking steps" [5].</em></p>
+
+<!-- ── Hardware HTTPS ── -->
+<h3>Penjelasan Rangkaian Skematik Perangkat Keras (HTTPS)</h3>
+<p>Berikut perangkat keras yang terlibat saat HTTPS bekerja pada sisi klien (komputer pengguna):</p>
+<table class="hw">
+  <tr><th>Komponen Hardware</th><th>Fungsi dalam HTTPS</th></tr>
+  <tr><td>CPU (Processor)</td><td>Menjalankan browser, memproses algoritma enkripsi TLS (AES, RSA, ECDHE), mengatur sesi HTTP. CPU modern umumnya memiliki instruksi AES-NI yang mempercepat enkripsi/dekripsi secara hardware.<sup>[6]</sup></td></tr>
+  <tr><td>RAM (Memory)</td><td>Menyimpan sesi TLS aktif, buffer data HTTP yang sedang diproses, dan sertifikat digital yang diunduh dari server. Diperlukan agar enkripsi/dekripsi berjalan cepat tanpa akses disk.<sup>[6]</sup></td></tr>
+  <tr><td>NIC (Network Interface Card)</td><td>Menerima dan mengirim paket-paket TCP/IP yang membawa data HTTPS terenkripsi. NIC beroperasi di Layer 2 (Data Link) dan Layer 1 (Physical), mengubah data digital menjadi sinyal listrik/optik di kabel Ethernet atau sinyal radio di Wi-Fi.<sup>[7]</sup></td></tr>
+  <tr><td>Kabel / Media Transmisi</td><td>Kabel Ethernet (twisted pair Cat5e/Cat6) atau koneksi fiber optik menjadi media fisik di mana paket HTTPS mengalir sebagai sinyal listrik atau cahaya antar perangkat jaringan.<sup>[8]</sup></td></tr>
+  <tr><td>Modem / Router</td><td>Meneruskan paket HTTPS ke internet melalui IP routing. Router memisahkan jaringan lokal (LAN) dari internet, sedangkan modem mengubah sinyal digital ke sinyal ISP (DSL, kabel, fiber).<sup>[8]</sup></td></tr>
+  <tr><td>Web Server (sisi server)</td><td>CPU server menjalankan software web (Apache, Nginx) dan memproses dekripsi TLS pada sisi server. Server juga memiliki NIC berkecepatan tinggi (10G/25G) untuk melayani banyak koneksi serentak.<sup>[6,7]</sup></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════
+     2. TCP
+════════════════════════════════════════════ -->
+<h2><span class="badge tcp">2</span> TCP — Transmission Control Protocol</h2>
+
+<h3>Fungsi Utama: Pengiriman Andal (Reliable Delivery)</h3>
+<div class="info-box tcp">
+  TCP adalah protokol lapisan transport (OSI Layer 4) yang menjamin pengiriman data secara andal, berurutan, dan bebas kesalahan antara dua host melalui jaringan IP. TCP merupakan tulang punggung sebagian besar komunikasi internet termasuk HTTP/HTTPS, email, dan transfer file.<sup>[9,10]</sup>
+</div>
+
+<p>TCP adalah protokol <em>connection-oriented</em> — sebelum data dikirim, kedua pihak harus membangun koneksi terlebih dahulu melalui proses <strong>3-Way Handshake</strong>. Setiap segmen data yang dikirim harus dikonfirmasi (ACK) oleh penerima; jika tidak ada konfirmasi, segmen akan dikirim ulang secara otomatis.<sup>[9,10]</sup></p>
+
+<h3>Peran dalam Akses Website</h3>
+<p>Saat mengakses website, TCP bertugas <strong>menjamin semua data web tiba lengkap dan berurutan</strong>. Halaman HTML, gambar, dan skrip dikirim dalam banyak segmen TCP yang dapat tiba tidak berurutan karena melalui jalur jaringan yang berbeda. TCP yang bertugas menyusun ulang segmen-segmen tersebut, meminta pengiriman ulang jika ada yang hilang, dan menyerahkan data utuh ke lapisan aplikasi (browser).<sup>[9,11]</sup></p>
+
+<!-- ── Diagram TCP ── -->
+<h3>Diagram Blok Alur Protokol TCP</h3>
+<div class="diagram-wrap">
+<svg width="100%" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Client & Server columns -->
+  <rect x="20" y="20" width="120" height="380" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="80" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">CLIENT</text>
+  <rect x="620" y="20" width="120" height="380" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="680" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">SERVER</text>
+
+  <!-- Vertical timelines -->
+  <line x1="80" y1="60" x2="80" y2="395" stroke="#16a34a" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="680" y1="60" x2="680" y2="395" stroke="#16a34a" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- Phase labels center column -->
+  <rect x="165" y="26" width="430" height="18" rx="4" fill="#dcfce7"/>
+  <text x="380" y="39" text-anchor="middle" font-size="9.5" font-weight="700" fill="#166534">FASE 1: CONNECTION ESTABLISHMENT (3-Way Handshake)</text>
+
+  <!-- SYN -->
+  <line x1="80" y1="72" x2="680" y2="90" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <rect x="270" y="61" width="220" height="18" rx="3" fill="#bbf7d0"/>
+  <text x="380" y="74" text-anchor="middle" font-size="9.5" fill="#166534">SYN (seq=x, Buka koneksi)</text>
+
+  <!-- SYN-ACK -->
+  <line x1="680" y1="108" x2="80" y2="126" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <rect x="270" y="97" width="220" height="18" rx="3" fill="#bbf7d0"/>
+  <text x="380" y="110" text-anchor="middle" font-size="9.5" fill="#166534">SYN+ACK (seq=y, ack=x+1)</text>
+
+  <!-- ACK -->
+  <line x1="80" y1="144" x2="680" y2="160" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <rect x="270" y="133" width="220" height="18" rx="3" fill="#bbf7d0"/>
+  <text x="380" y="146" text-anchor="middle" font-size="9.5" fill="#166534">ACK (ack=y+1) — Koneksi ESTABLISHED</text>
+
+  <!-- Phase 2 -->
+  <rect x="165" y="168" width="430" height="18" rx="4" fill="#dbeafe"/>
+  <text x="380" y="181" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d40ae">FASE 2: DATA TRANSFER (Reliable, Ordered)</text>
+
+  <line x1="80" y1="200" x2="680" y2="216" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <rect x="270" y="189" width="220" height="18" rx="3" fill="#bfdbfe"/>
+  <text x="380" y="202" text-anchor="middle" font-size="9.5" fill="#1e40af">DATA Segment 1 (seq=x+1)</text>
+
+  <line x1="680" y1="232" x2="80" y2="248" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#arr2)"/>
+  <text x="380" y="243" text-anchor="middle" font-size="9.5" fill="#1e40af">ACK (Konfirmasi terima)</text>
+
+  <line x1="80" y1="264" x2="680" y2="280" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <rect x="270" y="253" width="220" height="18" rx="3" fill="#bfdbfe"/>
+  <text x="380" y="266" text-anchor="middle" font-size="9.5" fill="#1e40af">DATA Segment 2 (seq=x+2)</text>
+
+  <line x1="680" y1="296" x2="80" y2="312" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#arr2)"/>
+  <text x="380" y="307" text-anchor="middle" font-size="9.5" fill="#1e40af">ACK (Konfirmasi terima)</text>
+
+  <!-- Phase 3 -->
+  <rect x="165" y="320" width="430" height="18" rx="4" fill="#fee2e2"/>
+  <text x="380" y="333" text-anchor="middle" font-size="9.5" font-weight="700" fill="#991b1b">FASE 3: CONNECTION TERMINATION (4-Way FIN)</text>
+
+  <line x1="80" y1="352" x2="680" y2="368" stroke="#dc2626" stroke-width="1.2" marker-end="url(#arr2)"/>
+  <text x="380" y="350" text-anchor="middle" font-size="9.5" fill="#991b1b">FIN</text>
+
+  <line x1="680" y1="384" x2="80" y2="395" stroke="#dc2626" stroke-width="1.2" marker-end="url(#arr2)"/>
+  <text x="380" y="382" text-anchor="middle" font-size="9.5" fill="#991b1b">FIN + ACK — Koneksi ditutup</text>
+</svg>
+<p class="diagram-caption">Gambar 2. Diagram alur protokol TCP: 3-Way Handshake (pembukaan koneksi), transfer data berurutan dengan konfirmasi ACK, dan penutupan koneksi.</p>
+</div>
+
+<p><em>Referensi diagram: diadaptasi dari [9,10,11]. Diagram 3-Way Handshake dari GeeksforGeeks [9] dan Microsoft Learn [11] menunjukkan detail pertukaran flag SYN/ACK.</em></p>
+
+<!-- ── Hardware TCP ── -->
+<h3>Penjelasan Rangkaian Skematik Perangkat Keras (TCP)</h3>
+<p>TCP adalah protokol software yang berjalan di dalam sistem operasi, namun perangkat keras berikut memainkan peran penting dalam implementasinya:</p>
+<table class="hw tcp">
+  <tr><th>Komponen Hardware</th><th>Fungsi dalam TCP</th></tr>
+  <tr><td>CPU (Processor)</td><td>Menjalankan TCP stack di dalam kernel sistem operasi (misalnya Linux TCP stack). CPU menghitung checksum segmen, mengelola nomor urut (sequence number), window size, dan mekanisme retransmission timer. Pada CPU modern, instruksi khusus offload checksum tersedia untuk meningkatkan performa.<sup>[6,7]</sup></td></tr>
+  <tr><td>RAM (Memory)</td><td>Menyimpan <em>Transmission Control Block (TCB)</em> — struktur data yang berisi tabel koneksi TCP, pointer buffer kirim/terima, antrian retransmisi, nomor urut saat ini, dan ukuran window. Setiap koneksi TCP aktif memiliki TCB sendiri di RAM.<sup>[12]</sup></td></tr>
+  <tr><td>NIC (Network Interface Card)</td><td>Pada NIC modern, fitur <em>TCP Offload Engine (TOE)</em> memungkinkan pemrosesan TCP dilakukan langsung di chip NIC, bukan di CPU utama. NIC juga mendukung <em>Large Segment Offload (LSO)</em> dan <em>Receive Side Scaling (RSS)</em> untuk mendistribusikan beban pemrosesan TCP ke banyak core CPU.<sup>[7]</sup></td></tr>
+  <tr><td>PCIe Bus (Motherboard)</td><td>NIC terhubung ke CPU dan RAM melalui slot PCIe (PCI Express) di motherboard. PCIe menyediakan jalur data berkecepatan tinggi (PCIe 3.0 x4 = ~16 Gbps) yang cukup untuk mendukung NIC 10GbE yang membawa banyak koneksi TCP serentak.<sup>[7]</sup></td></tr>
+  <tr><td>Switch Jaringan</td><td>Switch Ethernet di lapisan hardware meneruskan frame-frame TCP antar perangkat dalam LAN menggunakan tabel MAC address. Switch tidak membaca konten TCP, namun memastikan frame sampai ke tujuan yang benar di jaringan lokal.<sup>[8]</sup></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════
+     3. ETHERNET
+════════════════════════════════════════════ -->
+<h2><span class="badge eth">3</span> Ethernet — IEEE 802.3</h2>
+
+<h3>Fungsi Utama: Jaringan Kabel Lokal (LAN Kabel)</h3>
+<div class="info-box eth">
+  Ethernet adalah teknologi jaringan kabel yang mendefinisikan standar komunikasi di lapisan Data Link (OSI Layer 2) dan Physical (OSI Layer 1). Ethernet adalah teknologi LAN (Local Area Network) yang paling dominan digunakan saat ini, beroperasi pada kecepatan 10 Mbps hingga lebih dari 100 Gbps, dan distandarkan sebagai IEEE 802.3.<sup>[13,14]</sup>
+</div>
+
+<p>Ethernet mengemas data menjadi unit-unit yang disebut <strong>frame</strong>. Setiap frame berisi alamat MAC tujuan dan sumber, data yang dikirim, dan kode pendeteksi kesalahan (CRC/FCS). Frame dikirim melalui media fisik (kabel twisted pair atau fiber optik) dan disampaikan ke perangkat yang tepat berdasarkan MAC address.<sup>[13,14,15]</sup></p>
+
+<h3>Peran dalam Akses Website</h3>
+<p>Ethernet bertugas <strong>mengirim frame-frame data dalam jaringan lokal</strong>. Ketika paket HTTPS dikirim dari komputer pengguna menuju router/gateway internet, Ethernet yang mengangkutnya sebagai frame dari satu perangkat ke perangkat berikutnya dalam LAN. Ethernet tidak peduli dengan konten data (apakah itu HTTPS, TCP, atau lainnya) — tugasnya hanya memastikan frame tiba di MAC address tujuan yang benar dalam segmen jaringan lokal.<sup>[13,15,16]</sup></p>
+
+<!-- ── Diagram Ethernet ── -->
+<h3>Diagram Blok Alur Protokol Ethernet (Struktur Frame)</h3>
+<div class="diagram-wrap">
+<svg width="100%" viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <rect x="20" y="14" width="720" height="24" rx="6" fill="#fef3c7"/>
+  <text x="380" y="30" text-anchor="middle" font-size="11" font-weight="700" fill="#713f12">Struktur Ethernet Frame (IEEE 802.3)</text>
+
+  <!-- Frame fields -->
+  <!-- Preamble -->
+  <rect x="20" y="52" width="74" height="60" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1"/>
+  <text x="57" y="76" text-anchor="middle" font-size="9.5" font-weight="700" fill="#713f12">Preamble</text>
+  <text x="57" y="90" text-anchor="middle" font-size="8.5" fill="#92400e">7 bytes</text>
+  <text x="57" y="104" text-anchor="middle" font-size="8" fill="#92400e">Sinkronisasi</text>
+
+  <!-- SFD -->
+  <rect x="97" y="52" width="52" height="60" rx="4" fill="#fde68a" stroke="#d97706" stroke-width="1"/>
+  <text x="123" y="72" text-anchor="middle" font-size="9" font-weight="700" fill="#713f12">SFD</text>
+  <text x="123" y="84" text-anchor="middle" font-size="8" fill="#92400e">1 byte</text>
+  <text x="123" y="98" text-anchor="middle" font-size="8" fill="#92400e">Start</text>
+  <text x="123" y="108" text-anchor="middle" font-size="8" fill="#92400e">Frame</text>
+
+  <!-- Dst MAC -->
+  <rect x="152" y="52" width="90" height="60" rx="4" fill="#bfdbfe" stroke="#2563eb" stroke-width="1"/>
+  <text x="197" y="72" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d40ae">Dst MAC</text>
+  <text x="197" y="85" text-anchor="middle" font-size="8.5" fill="#1e40af">6 bytes</text>
+  <text x="197" y="98" text-anchor="middle" font-size="8" fill="#1e40af">Alamat tujuan</text>
+  <text x="197" y="108" text-anchor="middle" font-size="8" fill="#1e40af">(MAC address)</text>
+
+  <!-- Src MAC -->
+  <rect x="245" y="52" width="90" height="60" rx="4" fill="#bfdbfe" stroke="#2563eb" stroke-width="1"/>
+  <text x="290" y="72" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d40ae">Src MAC</text>
+  <text x="290" y="85" text-anchor="middle" font-size="8.5" fill="#1e40af">6 bytes</text>
+  <text x="290" y="98" text-anchor="middle" font-size="8" fill="#1e40af">Alamat pengirim</text>
+  <text x="290" y="108" text-anchor="middle" font-size="8" fill="#1e40af">(MAC address)</text>
+
+  <!-- EtherType -->
+  <rect x="338" y="52" width="72" height="60" rx="4" fill="#d1fae5" stroke="#16a34a" stroke-width="1"/>
+  <text x="374" y="72" text-anchor="middle" font-size="9.5" font-weight="700" fill="#166534">EtherType</text>
+  <text x="374" y="85" text-anchor="middle" font-size="8.5" fill="#15803d">2 bytes</text>
+  <text x="374" y="98" text-anchor="middle" font-size="8" fill="#15803d">Tipe protokol</text>
+  <text x="374" y="108" text-anchor="middle" font-size="8" fill="#15803d">IPv4/IPv6</text>
+
+  <!-- Data (Payload) -->
+  <rect x="413" y="52" width="230" height="60" rx="4" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1"/>
+  <text x="528" y="72" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5b21b6">Data / Payload</text>
+  <text x="528" y="85" text-anchor="middle" font-size="8.5" fill="#6d28d9">46–1500 bytes</text>
+  <text x="528" y="98" text-anchor="middle" font-size="8" fill="#6d28d9">Berisi paket IP (TCP/HTTPS)</text>
+  <text x="528" y="108" text-anchor="middle" font-size="8" fill="#6d28d9">yang dibungkus dalam frame</text>
+
+  <!-- FCS -->
+  <rect x="646" y="52" width="94" height="60" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="693" y="72" text-anchor="middle" font-size="9.5" font-weight="700" fill="#991b1b">FCS / CRC</text>
+  <text x="693" y="85" text-anchor="middle" font-size="8.5" fill="#dc2626">4 bytes</text>
+  <text x="693" y="98" text-anchor="middle" font-size="8" fill="#dc2626">Error detection</text>
+  <text x="693" y="108" text-anchor="middle" font-size="8" fill="#dc2626">(Cyclic Redund.)</text>
+
+  <!-- Bracket: Header -->
+  <line x1="20" y1="125" x2="149" y2="125" stroke="#d97706" stroke-width="1"/>
+  <line x1="20" y1="120" x2="20" y2="130" stroke="#d97706" stroke-width="1"/>
+  <line x1="149" y1="120" x2="149" y2="130" stroke="#d97706" stroke-width="1"/>
+  <text x="84" y="140" text-anchor="middle" font-size="8.5" fill="#b45309">Physical Layer</text>
+
+  <line x1="152" y1="125" x2="411" y2="125" stroke="#2563eb" stroke-width="1"/>
+  <line x1="152" y1="120" x2="152" y2="130" stroke="#2563eb" stroke-width="1"/>
+  <line x1="411" y1="120" x2="411" y2="130" stroke="#2563eb" stroke-width="1"/>
+  <text x="281" y="140" text-anchor="middle" font-size="8.5" fill="#1d40ae">Header (Data Link Layer)</text>
+
+  <line x1="413" y1="125" x2="643" y2="125" stroke="#7c3aed" stroke-width="1"/>
+  <line x1="413" y1="120" x2="413" y2="130" stroke="#7c3aed" stroke-width="1"/>
+  <line x1="643" y1="120" x2="643" y2="130" stroke="#7c3aed" stroke-width="1"/>
+  <text x="528" y="140" text-anchor="middle" font-size="8.5" fill="#5b21b6">Payload (upper layer data)</text>
+
+  <line x1="646" y1="125" x2="740" y2="125" stroke="#dc2626" stroke-width="1"/>
+  <line x1="646" y1="120" x2="646" y2="130" stroke="#dc2626" stroke-width="1"/>
+  <line x1="740" y1="120" x2="740" y2="130" stroke="#dc2626" stroke-width="1"/>
+  <text x="693" y="140" text-anchor="middle" font-size="8.5" fill="#991b1b">Trailer</text>
+
+  <!-- Network flow diagram -->
+  <text x="380" y="175" text-anchor="middle" font-size="10" font-weight="700" fill="#374151">Alur Pengiriman Frame Ethernet dalam LAN</text>
+
+  <!-- Computer -->
+  <rect x="30" y="188" width="80" height="50" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="70" y="209" text-anchor="middle" font-size="9.5" font-weight="700" fill="#1d40ae">Komputer</text>
+  <text x="70" y="222" text-anchor="middle" font-size="8.5" fill="#1e40af">NIC + MAC</text>
+  <text x="70" y="233" text-anchor="middle" font-size="8.5" fill="#1e40af">AA:BB:CC:DD</text>
+
+  <!-- Arrow to switch -->
+  <line x1="110" y1="213" x2="195" y2="213" stroke="#374151" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="152" y="207" text-anchor="middle" font-size="8.5" fill="#374151">Frame</text>
+
+  <!-- Switch -->
+  <rect x="196" y="188" width="80" height="50" rx="6" fill="#d1fae5" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="236" y="209" text-anchor="middle" font-size="9.5" font-weight="700" fill="#166534">Switch</text>
+  <text x="236" y="222" text-anchor="middle" font-size="8.5" fill="#15803d">MAC Table</text>
+  <text x="236" y="233" text-anchor="middle" font-size="8.5" fill="#15803d">L2 Switching</text>
+
+  <!-- Arrow to router -->
+  <line x1="276" y1="213" x2="355" y2="213" stroke="#374151" stroke-width="1.5" marker-end="url(#arr3)"/>
+  <text x="315" y="207" text-anchor="middle" font-size="8.5" fill="#374151">Frame</text>
+
+  <!-- Router/Gateway -->
+  <rect x="356" y="188" width="80" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="396" y="209" text-anchor="middle" font-size="9.5" font-weight="700" fill="#713f12">Router/</text>
+  <text x="396" y="221" text-anchor="middle" font-size="9.5" font-weight="700" fill="#713f12">Gateway</text>
+  <text x="396" y="233" text-anchor="middle" font-size="8.5" fill="#92400e">Ke Internet</text>
+
+  <!-- Arrow to internet -->
+  <line x1="436" y1="213" x2="515" y2="213" stroke="#374151" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr3)"/>
+  <text x="475" y="207" text-anchor="middle" font-size="8.5" fill="#374151">Packet IP</text>
+
+  <!-- Internet cloud simplified -->
+  <ellipse cx="580" cy="213" rx="50" ry="30" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="580" y="208" text-anchor="middle" font-size="9.5" font-weight="700" fill="#4338ca">Internet</text>
+  <text x="580" y="222" text-anchor="middle" font-size="8.5" fill="#4338ca">(WAN / ISP)</text>
+
+  <!-- Arrow to web server -->
+  <line x1="630" y1="213" x2="700" y2="213" stroke="#374151" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr3)"/>
+
+  <!-- Web server -->
+  <rect x="670" y="188" width="80" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="710" y="209" text-anchor="middle" font-size="9.5" font-weight="700" fill="#9d174d">Web</text>
+  <text x="710" y="221" text-anchor="middle" font-size="9.5" font-weight="700" fill="#9d174d">Server</text>
+  <text x="710" y="233" text-anchor="middle" font-size="8.5" fill="#be185d">HTTPS</text>
+
+  <!-- CSMA/CD note -->
+  <rect x="20" y="260" width="720" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="380" y="278" text-anchor="middle" font-size="10" font-weight="700" fill="#334155">Mekanisme Akses Media: CSMA/CD</text>
+  <text x="380" y="295" text-anchor="middle" font-size="9" fill="#475569">Carrier Sense: mendeteksi jaringan kosong sebelum kirim  |  Multiple Access: semua perangkat bisa akses media</text>
+  <text x="380" y="307" text-anchor="middle" font-size="9" fill="#475569">Collision Detection: deteksi tabrakan sinyal, hentikan kirim, tunggu waktu acak, kirim ulang</text>
+
+  <!-- OSI Layer label -->
+  <text x="380" y="340" text-anchor="middle" font-size="9.5" fill="#64748b">Ethernet beroperasi di OSI Layer 1 (Physical) dan Layer 2 (Data Link)</text>
+  <text x="380" y="356" text-anchor="middle" font-size="9" fill="#94a3b8">Frame dikirim melalui kabel twisted pair / fiber optik menggunakan sinyal listrik / cahaya</text>
+</svg>
+<p class="diagram-caption">Gambar 3. Struktur frame Ethernet IEEE 802.3 dan alur pengiriman data dalam jaringan lokal (LAN) hingga ke internet.</p>
+</div>
+
+<p><em>Sumber referensi struktur frame: GeeksforGeeks [14], Study CCNA [15], IONOS [16]. Ethernet hanya mendeteksi kesalahan (bukan memperbaiki) — pemulihan error dilakukan oleh TCP di lapisan atasnya.</em></p>
+
+<!-- ── Hardware Ethernet ── -->
+<h3>Penjelasan Rangkaian Skematik Perangkat Keras (Ethernet)</h3>
+<p>Ethernet adalah teknologi yang paling erat berkaitan dengan perangkat keras fisik. Berikut komponen hardware yang terlibat:</p>
+<table class="hw eth">
+  <tr><th>Komponen Hardware</th><th>Fungsi dalam Ethernet</th></tr>
+  <tr><td>NIC — Network Interface Card</td><td>Komponen inti Ethernet pada setiap perangkat. NIC memiliki controller (mini-CPU) yang memproses data masuk/keluar, memiliki port RJ-45 untuk kabel Ethernet, dan memiliki alamat MAC unik 48-bit yang di-burn ke chip ROM. NIC mengubah data digital menjadi sinyal listrik untuk dikirim ke kabel dan sebaliknya.<sup>[7,8]</sup></td></tr>
+  <tr><td>MAC Address ROM (di NIC)</td><td>Sebuah chip ROM (Read-Only Memory) di NIC yang menyimpan alamat MAC (Media Access Control) secara permanen. MAC address 48-bit ini digunakan Ethernet untuk mengidentifikasi setiap perangkat secara unik dalam jaringan lokal dan menentukan tujuan pengiriman frame.<sup>[7,17]</sup></td></tr>
+  <tr><td>PHY Chip (Physical Layer Chip)</td><td>Chip khusus di NIC yang bertugas mengubah sinyal digital (bit 0 dan 1) menjadi sinyal analog/listrik yang bisa dikirim melalui kabel Ethernet, dan sebaliknya. PHY chip menangani encoding (Manchester, NRZ, PAM-4) sesuai standar kecepatan Ethernet (10M/100M/1G/10G).<sup>[7]</sup></td></tr>
+  <tr><td>Kabel Twisted Pair (UTP/STP)</td><td>Media transmisi fisik Ethernet. Kabel Cat5e mendukung Gigabit Ethernet (1000BASE-T), kabel Cat6/Cat6a mendukung 10GBase-T. Setiap pasang kawat terpilin untuk mengurangi interferensi elektromagnetik (crosstalk). Terhubung ke NIC dan switch menggunakan konektor RJ-45.<sup>[8]</sup></td></tr>
+  <tr><td>Switch Ethernet (L2 Switch)</td><td>Perangkat jaringan yang meneruskan frame Ethernet antar port berdasarkan tabel MAC address. Switch mempelajari MAC address dari frame yang masuk, menyimpannya di tabel CAM (Content Addressable Memory), dan meneruskan frame hanya ke port tujuan yang benar — bukan broadcast ke semua port.<sup>[8,16]</sup></td></tr>
+  <tr><td>Buffer / RAM di Switch</td><td>Switch memiliki RAM internal untuk menyimpan frame sementara (store-and-forward) sebelum diteruskan ke port tujuan. Buffer ini penting saat port tujuan sedang sibuk dan frame harus menunggu sebelum dikirim.</td></tr>
+  <tr><td>Kristal Osilator (Clock)</td><td>NIC dan switch memiliki kristal osilator yang menghasilkan sinyal clock. Preamble 7-byte di setiap frame Ethernet digunakan untuk sinkronisasi clock antara pengirim dan penerima, memastikan keduanya membaca bit pada waktu yang tepat.<sup>[14,15]</sup></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════
+     DAFTAR PUSTAKA
+════════════════════════════════════════════ -->
+<div class="refs">
+<h2>Daftar Pustaka / Referensi</h2>
+<ol class="reflist">
+  <li>Goswami, P. (2023). <em>HTTP Request Response Flow</em>. Parth's Blog. <a href="https://www.parthgoswami.com/http_request_response_flow/" target="_blank">https://www.parthgoswami.com/http_request_response_flow/</a></li>
+  <li>Yadav, A. (2020). <em>Understand the Flow of a HTTP Request</em>. Better Programming – Medium. <a href="https://medium.com/better-programming/understand-the-flow-of-a-http-request-1a268ec193f0" target="_blank">https://medium.com/better-programming/understand-the-flow-of-a-http-request-1a268ec193f0</a></li>
+  <li>ZeeshanAli, (2024). <em>HTTPS: How HTTPS Works – Handshake</em>. DEV Community. <a href="https://dev.to/zeeshanali0704/https-how-https-works-handshake-1mjo" target="_blank">https://dev.to/zeeshanali0704/https-how-https-works-handshake-1mjo</a></li>
+  <li>alyssaq. (2013). <em>HTTP Connections: How does traffic flow through the Internet?</em> GitHub Gist. <a href="https://gist.github.com/alyssaq/6388253" target="_blank">https://gist.github.com/alyssaq/6388253</a></li>
+  <li>ResearchGate. <em>HTTPS message sequence diagram with detailed TLS handshaking steps</em>. <a href="https://www.researchgate.net/figure/HTTPS-message-sequence-diagram-with-detailed-TLS-handshaking-steps_fig1_306187575" target="_blank">https://www.researchgate.net/figure/HTTPS-message-sequence-diagram_fig1_306187575</a></li>
+  <li>TechTarget. <em>What is a network interface card (NIC)?</em> <a href="https://www.techtarget.com/searchnetworking/definition/network-interface-card" target="_blank">https://www.techtarget.com/searchnetworking/definition/network-interface-card</a></li>
+  <li>Wikipedia. <em>Network interface controller</em>. <a href="https://en.wikipedia.org/wiki/Network_interface_controller" target="_blank">https://en.wikipedia.org/wiki/Network_interface_controller</a></li>
+  <li>Fluke Networks. (2022). <em>101 Series Ethernet: Back to Basics</em>. <a href="https://www.flukenetworks.com/blog/cabling-chronicles/101-series-ethernet-back-basics" target="_blank">https://www.flukenetworks.com/blog/cabling-chronicles/101-series-ethernet-back-basics</a></li>
+  <li>GeeksforGeeks. (2025). <em>TCP 3-Way Handshake Process</em>. <a href="https://www.geeksforgeeks.org/computer-networks/tcp-3-way-handshake-process/" target="_blank">https://www.geeksforgeeks.org/computer-networks/tcp-3-way-handshake-process/</a></li>
+  <li>Wikipedia. <em>Transmission Control Protocol</em>. <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol" target="_blank">https://en.wikipedia.org/wiki/Transmission_Control_Protocol</a></li>
+  <li>Microsoft Learn. <em>The three-way handshake via TCP/IP</em>. <a href="https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/three-way-handshake-via-tcpip" target="_blank">https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/three-way-handshake-via-tcpip</a></li>
+  <li>Wireshark Wiki. <em>TCP 3-way handshaking</em>. <a href="https://wiki.wireshark.org/TCP_3_way_handshaking" target="_blank">https://wiki.wireshark.org/TCP_3_way_handshaking</a></li>
+  <li>Fluke Networks. (2022). <em>101 Series Ethernet: Back to Basics</em>. [sama dengan no. 8]</li>
+  <li>GeeksforGeeks. (2024). <em>Ethernet Frame Format</em>. <a href="https://www.geeksforgeeks.org/computer-networks/ethernet-frame-format/" target="_blank">https://www.geeksforgeeks.org/computer-networks/ethernet-frame-format/</a></li>
+  <li>Study CCNA. (2022). <em>What is an Ethernet Frame?</em> <a href="https://study-ccna.com/ethernet-frame/" target="_blank">https://study-ccna.com/ethernet-frame/</a></li>
+  <li>IONOS. (2020). <em>Ethernet Frame</em>. <a href="https://www.ionos.com/digitalguide/server/know-how/ethernet-frame/" target="_blank">https://www.ionos.com/digitalguide/server/know-how/ethernet-frame/</a></li>
+  <li>GeeksforGeeks. (2025). <em>Network Interface Card (NIC)</em>. <a href="https://www.geeksforgeeks.org/computer-networks/nic-full-form/" target="_blank">https://www.geeksforgeeks.org/computer-networks/nic-full-form/</a></li>
+</ol>
+</div>
+
+</body>
+</html>
